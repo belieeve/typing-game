@@ -106,6 +106,90 @@
             transform: translateY(-1px);
         }
 
+        .hero-image {
+            margin: 20px 0;
+            position: relative;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero-characters {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .hero-character {
+            font-size: 80px;
+            animation: bounce-float 2s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+        }
+
+        .hero-character:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .hero-character:nth-child(2) {
+            animation-delay: 0.3s;
+            font-size: 100px;
+        }
+
+        .hero-character:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes bounce-float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        .sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .sparkle {
+            position: absolute;
+            font-size: 24px;
+            animation: sparkle-twinkle 3s ease-in-out infinite;
+        }
+
+        .sparkle:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .sparkle:nth-child(2) { top: 20%; right: 15%; animation-delay: 0.5s; }
+        .sparkle:nth-child(3) { bottom: 30%; left: 20%; animation-delay: 1s; }
+        .sparkle:nth-child(4) { bottom: 20%; right: 10%; animation-delay: 1.5s; }
+        .sparkle:nth-child(5) { top: 40%; left: 5%; animation-delay: 2s; }
+        .sparkle:nth-child(6) { top: 30%; right: 8%; animation-delay: 2.5s; }
+
+        @keyframes sparkle-twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+        }
+
+        .start-screen {
+            position: relative;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .welcome-text {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFE66D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
         .question-area {
             margin: 5px 0;
             padding: 10px;
@@ -689,8 +773,26 @@
 
         <div class="game-screen">
             <div class="start-screen" id="startScreen">
-                <p style="font-size: 18px; margin-bottom: 8px;">きみは タイピング トレーナー だ！</p>
-                <p style="font-size: 14px; margin-bottom: 12px; color: #666;">もじを うって レベルアップ しよう！</p>
+                <div class="welcome-text">ようこそ！</div>
+
+                <div class="hero-image">
+                    <div class="sparkles">
+                        <div class="sparkle">✨</div>
+                        <div class="sparkle">⭐</div>
+                        <div class="sparkle">💫</div>
+                        <div class="sparkle">✨</div>
+                        <div class="sparkle">⭐</div>
+                        <div class="sparkle">💫</div>
+                    </div>
+                    <div class="hero-characters">
+                        <div class="hero-character">🐥</div>
+                        <div class="hero-character">🐲</div>
+                        <div class="hero-character">🦄</div>
+                    </div>
+                </div>
+
+                <p style="font-size: 18px; margin-bottom: 8px; font-weight: bold;">きみは タイピング トレーナー だ！</p>
+                <p style="font-size: 14px; margin-bottom: 12px; color: #666;">もじを うって モンスターを そだてよう！</p>
                 <button class="start-button" onclick="startGame()">スタート！</button>
             </div>
 
