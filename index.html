@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タイピング トレーナー</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            padding: 10px 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            max-height: 98vh;
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3px;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+        }
+
+        .score-badge {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(78,205,196,0.4);
+        }
+
+        .game-screen {
+            text-align: center;
+            margin: 5px 0;
+        }
+
+        .start-screen {
+            display: block;
+        }
+
+        .play-screen {
+            display: none;
+        }
+
+        .start-button {
+            font-size: 24px;
+            padding: 12px 35px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(255,107,107,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255,107,107,0.6);
+        }
+
+        .start-button:active {
+            transform: translateY(-1px);
+        }
+
+        .question-area {
+            margin: 5px 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #FFF9C4, #FFEB3B);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .question-hiragana {
+            font-size: 56px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .question-romaji {
+            font-size: 24px;
+            color: #666;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .input-display {
+            font-size: 32px;
+            color: #4ECDC4;
+            font-family: monospace;
+            letter-spacing: 4px;
+            margin: 5px 0;
+            min-height: 40px;
+        }
+
+        .keyboard {
+            display: grid;
+            gap: 2px;
+            margin: 5px auto;
+            max-width: 600px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .key {
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            padding: 6px;
+            min-width: 35px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .key.highlight {
+            background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+            border-color: #FF6B6B;
+            color: white;
+            transform: scale(1.2);
+            box-shadow: 0 0 30px rgba(255,107,107,0.8);
+            animation: pulse 0.6s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.2); }
+            50% { transform: scale(1.3); }
+        }
+
+        .key.space {
+            min-width: 300px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            transition: width 0.3s;
+            border-radius: 8px;
+        }
+
+        .romaji-guide {
+            margin-top: 5px;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .romaji-guide h3 {
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 4px;
+        }
+
+        .guide-item {
+            padding: 4px;
+            background: white;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .guide-hiragana {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .guide-romaji {
+            font-size: 11px;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .feedback {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 5px 0;
+            min-height: 28px;
+        }
+
+        .feedback.correct {
+            color: #4ECDC4;
+            animation: bounce 0.5s;
+        }
+
+        .feedback.wrong {
+            color: #FF6B6B;
+            animation: shake 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .level-up {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 60px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .level-up.show {
+            display: block;
+            animation: zoomIn 0.5s;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .level-up h2 {
+            font-size: 72px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .level-up button {
+            font-size: 32px;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .home-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            display: none;
+        }
+
+        .home-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .home-button.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" style="position: relative;">
+        <button class="home-button" id="homeButton" onclick="goHome()">🏠 トップへ</button>
+        <div class="header">
+            <div class="title">⚡ タイピング トレーナー ⚡</div>
+        </div>
+
+        <div class="level-info">
+            <div class="level-badge">レベル <span id="level">1</span></div>
+            <div class="score-badge">スコア <span id="score">0</span>/10</div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="game-screen">
+            <div class="start-screen" id="startScreen">
+                <p style="font-size: 18px; margin-bottom: 8px;">きみは タイピング トレーナー だ！</p>
+                <p style="font-size: 14px; margin-bottom: 12px; color: #666;">もじを うって レベルアップ しよう！</p>
+                <button class="start-button" onclick="startGame()">スタート！</button>
+            </div>
+
+            <div class="play-screen" id="playScreen">
+                <div class="question-area">
+                    <div class="question-hiragana" id="questionHiragana">あ</div>
+                    <div class="question-romaji" id="questionRomaji">a</div>
+                </div>
+
+                <div class="input-display" id="inputDisplay"></div>
+                <div class="feedback" id="feedback"></div>
+
+                <div class="keyboard" id="keyboard"></div>
+            </div>
+        </div>
+
+        <div class="romaji-guide">
+            <h3>📖 ローマじ ひょう</h3>
+            <div class="guide-grid" id="guideGrid"></div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="level-up" id="levelUpScreen">
+        <h2>🎉 レベルアップ！</h2>
+        <p style="font-size: 36px; margin: 20px 0;">レベル <span id="newLevel"></span> になったよ！</p>
+        <button onclick="continuePlaying()">つぎへ！</button>
+    </div>
+
+    <script>
+        // ゲームデータ
+        const levels = [
+            { level: 1, chars: ['あ', 'い', 'う', 'え', 'お'] },
+            { level: 2, chars: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'] },
+            { level: 3, chars: ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'] },
+            { level: 4, chars: ['さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'] },
+            { level: 5, chars: ['た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の'] },
+            { level: 6, chars: ['な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ'] },
+            { level: 7, chars: ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'] },
+            { level: 8, chars: ['ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り'] },
+            { level: 9, chars: ['や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を'] },
+            { level: 10, chars: ['ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'] },
+            { level: 11, chars: ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'] },
+            { level: 12, chars: ['だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ'] },
+            { level: 13, chars: ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'] },
+            { level: 14, chars: ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ'] },
+            { level: 15, chars: ['ねこ', 'いぬ', 'うま', 'とり', 'さかな', 'はな', 'そら', 'かわ'] }
+        ];
+
+        const hiraganaToRomaji = {
+            'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+            'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+            'さ': 'sa', 'し': 'shi', 'す': 'su', 'せ': 'se', 'そ': 'so',
+            'た': 'ta', 'ち': 'chi', 'つ': 'tsu', 'て': 'te', 'と': 'to',
+            'な': 'na', 'に': 'ni', 'ぬ': 'nu', 'ね': 'ne', 'の': 'no',
+            'は': 'ha', 'ひ': 'hi', 'ふ': 'fu', 'へ': 'he', 'ほ': 'ho',
+            'ま': 'ma', 'み': 'mi', 'む': 'mu', 'め': 'me', 'も': 'mo',
+            'や': 'ya', 'ゆ': 'yu', 'よ': 'yo',
+            'ら': 'ra', 'り': 'ri', 'る': 'ru', 'れ': 're', 'ろ': 'ro',
+            'わ': 'wa', 'を': 'wo', 'ん': 'n',
+            'が': 'ga', 'ぎ': 'gi', 'ぐ': 'gu', 'げ': 'ge', 'ご': 'go',
+            'ざ': 'za', 'じ': 'ji', 'ず': 'zu', 'ぜ': 'ze', 'ぞ': 'zo',
+            'だ': 'da', 'ぢ': 'di', 'づ': 'du', 'で': 'de', 'ど': 'do',
+            'ば': 'ba', 'び': 'bi', 'ぶ': 'bu', 'べ': 'be', 'ぼ': 'bo',
+            'ぱ': 'pa', 'ぴ': 'pi', 'ぷ': 'pu', 'ぺ': 'pe', 'ぽ': 'po',
+            'きゃ': 'kya', 'きゅ': 'kyu', 'きょ': 'kyo',
+            'しゃ': 'sha', 'しゅ': 'shu', 'しょ': 'sho',
+            'ちゃ': 'cha', 'ちゅ': 'chu', 'ちょ': 'cho',
+            'にゃ': 'nya', 'にゅ': 'nyu', 'にょ': 'nyo',
+            'ひゃ': 'hya', 'ひゅ': 'hyu', 'ひょ': 'hyo',
+            'みゃ': 'mya', 'みゅ': 'myu', 'みょ': 'myo',
+            'りゃ': 'rya', 'りゅ': 'ryu', 'りょ': 'ryo',
+            'ぎゃ': 'gya', 'ぎゅ': 'gyu', 'ぎょ': 'gyo',
+            'じゃ': 'ja', 'じゅ': 'ju', 'じょ': 'jo',
+            'びゃ': 'bya', 'びゅ': 'byu', 'びょ': 'byo',
+            'ぴゃ': 'pya', 'ぴゅ': 'pyu', 'ぴょ': 'pyo',
+            'ねこ': 'neko', 'いぬ': 'inu', 'うま': 'uma', 'とり': 'tori',
+            'さかな': 'sakana', 'はな': 'hana', 'そら': 'sora', 'かわ': 'kawa'
+        };
+
+        let currentLevel = 1;
+        let currentScore = 0;
+        let currentQuestion = '';
+        let currentAnswer = '';
+        let currentInput = '';
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            const layout = [
+                ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+                ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+                ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+                ['z', 'x', 'c', 'v', 'b', 'n', 'm']
+            ];
+
+            layout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                row.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key';
+                    keyDiv.textContent = key.toUpperCase();
+                    keyDiv.id = `key-${key}`;
+                    rowDiv.appendChild(keyDiv);
+                });
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function updateRomajiGuide() {
+            const guideGrid = document.getElementById('guideGrid');
+            guideGrid.innerHTML = '';
+
+            const currentLevelData = levels[currentLevel - 1];
+            currentLevelData.chars.forEach(char => {
+                const romaji = hiraganaToRomaji[char];
+                if (romaji) {
+                    const item = document.createElement('div');
+                    item.className = 'guide-item';
+                    item.innerHTML = `
+                        <div class="guide-hiragana">${char}</div>
+                        <div class="guide-romaji">${romaji}</div>
+                    `;
+                    guideGrid.appendChild(item);
+                }
+            });
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('playScreen').style.display = 'block';
+            document.getElementById('homeButton').classList.add('show');
+            createKeyboard();
+            updateRomajiGuide();
+            nextQuestion();
+        }
+
+        function goHome() {
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('playScreen').style.display = 'none';
+            document.getElementById('homeButton').classList.remove('show');
+            // ゲーム状態をリセット
+            currentLevel = 1;
+            currentScore = 0;
+            document.getElementById('level').textContent = currentLevel;
+            document.getElementById('score').textContent = currentScore;
+            document.getElementById('progress').style.width = '0%';
+        }
+
+        function nextQuestion() {
+            const levelData = levels[currentLevel - 1];
+            const randomChar = levelData.chars[Math.floor(Math.random() * levelData.chars.length)];
+            currentQuestion = randomChar;
+            currentAnswer = hiraganaToRomaji[randomChar];
+            currentInput = '';
+
+            document.getElementById('questionHiragana').textContent = currentQuestion;
+            document.getElementById('questionRomaji').textContent = currentAnswer;
+            document.getElementById('inputDisplay').textContent = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+
+            highlightNextKey();
+        }
+
+        function highlightNextKey() {
+            // すべてのキーのハイライトを解除
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('highlight');
+            });
+
+            // 次に押すべきキーをハイライト
+            if (currentInput.length < currentAnswer.length) {
+                const nextChar = currentAnswer[currentInput.length].toLowerCase();
+                const keyElement = document.getElementById(`key-${nextChar}`);
+                if (keyElement) {
+                    keyElement.classList.add('highlight');
+                }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('playScreen').style.display === 'none') return;
+            if (document.getElementById('levelUpScreen').classList.contains('show')) return;
+
+            const key = e.key.toLowerCase();
+
+            if (currentInput.length < currentAnswer.length) {
+                const expectedChar = currentAnswer[currentInput.length].toLowerCase();
+
+                if (key === expectedChar) {
+                    currentInput += key;
+                    document.getElementById('inputDisplay').textContent = currentInput;
+
+                    if (currentInput === currentAnswer) {
+                        // 正解！
+                        document.getElementById('feedback').textContent = '⭐ せいかい！';
+                        document.getElementById('feedback').className = 'feedback correct';
+                        currentScore++;
+                        updateScore();
+
+                        setTimeout(() => {
+                            if (currentScore >= 10) {
+                                levelUp();
+                            } else {
+                                nextQuestion();
+                            }
+                        }, 1000);
+                    } else {
+                        highlightNextKey();
+                    }
+                } else {
+                    // 不正解
+                    document.getElementById('feedback').textContent = '❌ ちがうよ！ ' + expectedChar.toUpperCase() + ' を おして！';
+                    document.getElementById('feedback').className = 'feedback wrong';
+                }
+            }
+        });
+
+        function updateScore() {
+            document.getElementById('score').textContent = currentScore;
+            const progress = (currentScore / 10) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        function levelUp() {
+            if (currentLevel < levels.length) {
+                currentLevel++;
+                currentScore = 0;
+                document.getElementById('level').textContent = currentLevel;
+                document.getElementById('newLevel').textContent = currentLevel;
+                document.getElementById('overlay').classList.add('show');
+                document.getElementById('levelUpScreen').classList.add('show');
+                updateRomajiGuide();
+            } else {
+                alert('🎊 おめでとう！ ぜんぶ クリア したよ！ 🎊');
+                currentScore = 0;
+            }
+            updateScore();
+        }
+
+        function continuePlaying() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('levelUpScreen').classList.remove('show');
+            nextQuestion();
+        }
+    </script>
+</body>
+</html>
