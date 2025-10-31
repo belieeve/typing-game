@@ -255,8 +255,10 @@
         }
 
         @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            0%, 100% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-15px) scale(1.1); }
+            50% { transform: translateY(-20px) scale(1.15); }
+            75% { transform: translateY(-10px) scale(1.05); }
         }
 
         @keyframes shake {
@@ -265,14 +267,18 @@
             75% { transform: translateX(10px); }
         }
 
+        .question-area {
+            transition: background 0.5s ease;
+        }
+
         .level-up {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 60px;
-            border-radius: 30px;
+            padding: 40px;
+            border-radius: 25px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             display: none;
             z-index: 1000;
@@ -281,7 +287,7 @@
 
         .level-up.show {
             display: block;
-            animation: zoomIn 0.5s;
+            animation: zoomIn 0.5s, celebrate 0.5s ease-in-out 0.2s;
         }
 
         @keyframes zoomIn {
@@ -295,24 +301,35 @@
             }
         }
 
+        @keyframes celebrate {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(-5deg); }
+            75% { transform: translate(-50%, -50%) rotate(5deg); }
+        }
+
         .level-up h2 {
-            font-size: 72px;
+            font-size: 48px;
             background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .level-up button {
-            font-size: 32px;
-            padding: 20px 50px;
+            font-size: 24px;
+            padding: 15px 40px;
             background: linear-gradient(135deg, #4ECDC4, #44A08D);
             color: white;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        .level-up button:hover {
+            transform: scale(1.05);
         }
 
         .overlay {
@@ -380,7 +397,7 @@
             </div>
 
             <div class="play-screen" id="playScreen">
-                <div class="question-area">
+                <div class="question-area" id="questionArea">
                     <div class="question-hiragana" id="questionHiragana">あ</div>
                     <div class="question-romaji" id="questionRomaji">a</div>
                 </div>
@@ -401,28 +418,28 @@
     <div class="overlay" id="overlay"></div>
     <div class="level-up" id="levelUpScreen">
         <h2>🎉 レベルアップ！</h2>
-        <p style="font-size: 36px; margin: 20px 0;">レベル <span id="newLevel"></span> になったよ！</p>
+        <p style="font-size: 28px; margin: 15px 0;">レベル <span id="newLevel"></span> になったよ！</p>
         <button onclick="continuePlaying()">つぎへ！</button>
     </div>
 
     <script>
         // ゲームデータ
         const levels = [
-            { level: 1, chars: ['あ', 'い', 'う', 'え', 'お'], questionsToPass: 3 },
-            { level: 2, chars: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'], questionsToPass: 3 },
-            { level: 3, chars: ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'], questionsToPass: 5 },
-            { level: 4, chars: ['さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'], questionsToPass: 5 },
-            { level: 5, chars: ['た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の'], questionsToPass: 5 },
-            { level: 6, chars: ['な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ'], questionsToPass: 5 },
-            { level: 7, chars: ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'], questionsToPass: 7 },
-            { level: 8, chars: ['ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り'], questionsToPass: 7 },
-            { level: 9, chars: ['や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を'], questionsToPass: 7 },
-            { level: 10, chars: ['ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'], questionsToPass: 7 },
-            { level: 11, chars: ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'], questionsToPass: 7 },
-            { level: 12, chars: ['だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ'], questionsToPass: 7 },
-            { level: 13, chars: ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'], questionsToPass: 5 },
-            { level: 14, chars: ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ'], questionsToPass: 7 },
-            { level: 15, chars: ['ねこ', 'いぬ', 'うま', 'とり', 'さかな', 'はな', 'そら', 'かわ'], questionsToPass: 8 }
+            { level: 1, chars: ['あ', 'い', 'う', 'え', 'お'], questionsToPass: 3, hintRate: 1.0, theme: '#FFF9C4' },
+            { level: 2, chars: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'], questionsToPass: 3, hintRate: 1.0, theme: '#FFF9C4' },
+            { level: 3, chars: ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'], questionsToPass: 5, hintRate: 1.0, theme: '#E1F5DD' },
+            { level: 4, chars: ['さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'], questionsToPass: 5, hintRate: 0.5, theme: '#E1F5DD' },
+            { level: 5, chars: ['た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の'], questionsToPass: 5, hintRate: 0.5, theme: '#D4E9FF' },
+            { level: 6, chars: ['な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ'], questionsToPass: 5, hintRate: 0.5, theme: '#D4E9FF' },
+            { level: 7, chars: ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'], questionsToPass: 7, hintRate: 0.33, theme: '#FFE8F0' },
+            { level: 8, chars: ['ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り'], questionsToPass: 7, hintRate: 0.33, theme: '#FFE8F0' },
+            { level: 9, chars: ['や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を'], questionsToPass: 7, hintRate: 0.33, theme: '#FFF0E1' },
+            { level: 10, chars: ['ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'], questionsToPass: 7, hintRate: 0, theme: '#FFF0E1' },
+            { level: 11, chars: ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'], questionsToPass: 7, hintRate: 0, theme: '#E8E1FF' },
+            { level: 12, chars: ['だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ'], questionsToPass: 7, hintRate: 0, theme: '#E8E1FF' },
+            { level: 13, chars: ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'], questionsToPass: 5, hintRate: 0, theme: '#FFE1F0' },
+            { level: 14, chars: ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ'], questionsToPass: 7, hintRate: 0, theme: '#FFE1F0' },
+            { level: 15, chars: ['ねこ', 'いぬ', 'うま', 'とり', 'さかな', 'はな', 'そら', 'かわ'], questionsToPass: 8, hintRate: 0, theme: '#FFD4E8' }
         ];
 
         const hiraganaToRomaji = {
@@ -461,6 +478,26 @@
         let currentQuestion = '';
         let currentAnswer = '';
         let currentInput = '';
+        let comboCount = 0;
+        let shouldShowHint = true;
+        let totalQuestionsInLevel = 0;
+
+        // 正解メッセージのバリエーション
+        const successMessages = [
+            '⭐ せいかい！',
+            '✨ すごい！',
+            '🎉 やったね！',
+            '👏 すばらしい！',
+            '💫 かんぺき！',
+            '🌟 さいこう！'
+        ];
+
+        const comboMessages = [
+            '🔥 コンボ！',
+            '⚡ れんぞく！',
+            '💪 ちょうし いいね！',
+            '🚀 すごいぞ！'
+        ];
 
         function createKeyboard() {
             const keyboard = document.getElementById('keyboard');
@@ -523,6 +560,8 @@
             // ゲーム状態をリセット
             currentLevel = 1;
             currentScore = 0;
+            comboCount = 0;
+            totalQuestionsInLevel = 0;
             document.getElementById('level').textContent = currentLevel;
             const currentLevelData = levels[currentLevel - 1];
             document.getElementById('score').textContent = currentScore + '/' + currentLevelData.questionsToPass;
@@ -535,6 +574,15 @@
             currentQuestion = randomChar;
             currentAnswer = hiraganaToRomaji[randomChar];
             currentInput = '';
+            totalQuestionsInLevel++;
+
+            // ヒント表示の判定
+            const hintRate = levelData.hintRate;
+            shouldShowHint = Math.random() < hintRate;
+
+            // 問題エリアの背景色をレベルテーマに変更
+            const questionArea = document.getElementById('questionArea');
+            questionArea.style.background = `linear-gradient(135deg, ${levelData.theme}, #FFEB3B)`;
 
             document.getElementById('questionHiragana').textContent = currentQuestion;
             document.getElementById('questionRomaji').textContent = currentAnswer;
@@ -551,8 +599,8 @@
                 key.classList.remove('highlight');
             });
 
-            // 次に押すべきキーをハイライト
-            if (currentInput.length < currentAnswer.length) {
+            // ヒントを表示する場合のみハイライト
+            if (shouldShowHint && currentInput.length < currentAnswer.length) {
                 const nextChar = currentAnswer[currentInput.length].toLowerCase();
                 const keyElement = document.getElementById(`key-${nextChar}`);
                 if (keyElement) {
@@ -576,9 +624,20 @@
 
                     if (currentInput === currentAnswer) {
                         // 正解！
-                        document.getElementById('feedback').textContent = '⭐ せいかい！';
-                        document.getElementById('feedback').className = 'feedback correct';
+                        comboCount++;
                         currentScore++;
+
+                        // メッセージの選択
+                        let message = successMessages[Math.floor(Math.random() * successMessages.length)];
+
+                        // コンボメッセージの追加
+                        if (comboCount >= 3) {
+                            const comboMsg = comboMessages[Math.floor(Math.random() * comboMessages.length)];
+                            message = message + ' ' + comboMsg + ' (x' + comboCount + ')';
+                        }
+
+                        document.getElementById('feedback').textContent = message;
+                        document.getElementById('feedback').className = 'feedback correct';
                         updateScore();
 
                         setTimeout(() => {
@@ -594,7 +653,9 @@
                     }
                 } else {
                     // 不正解
-                    document.getElementById('feedback').textContent = '❌ ちがうよ！ ' + expectedChar.toUpperCase() + ' を おして！';
+                    comboCount = 0; // コンボリセット
+                    const hintText = shouldShowHint ? '' : expectedChar.toUpperCase() + ' を おして！';
+                    document.getElementById('feedback').textContent = '❌ ちがうよ！ ' + hintText;
                     document.getElementById('feedback').className = 'feedback wrong';
                 }
             }
@@ -612,13 +673,15 @@
             if (currentLevel < levels.length) {
                 currentLevel++;
                 currentScore = 0;
+                comboCount = 0;
+                totalQuestionsInLevel = 0;
                 document.getElementById('level').textContent = currentLevel;
                 document.getElementById('newLevel').textContent = currentLevel;
                 document.getElementById('overlay').classList.add('show');
                 document.getElementById('levelUpScreen').classList.add('show');
                 updateRomajiGuide();
             } else {
-                alert('🎊 おめでとう！ ぜんぶ クリア したよ！ 🎊');
+                alert('🎊 おめでとう！ ぜんぶ クリア したよ！ 🎊\nあなたは タイピング マスター だ！');
                 currentScore = 0;
             }
             updateScore();
