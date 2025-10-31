@@ -365,7 +365,7 @@
 
         <div class="level-info">
             <div class="level-badge">レベル <span id="level">1</span></div>
-            <div class="score-badge">スコア <span id="score">0</span>/10</div>
+            <div class="score-badge">スコア <span id="score">0/3</span></div>
         </div>
 
         <div class="progress-bar">
@@ -408,21 +408,21 @@
     <script>
         // ゲームデータ
         const levels = [
-            { level: 1, chars: ['あ', 'い', 'う', 'え', 'お'] },
-            { level: 2, chars: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'] },
-            { level: 3, chars: ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'] },
-            { level: 4, chars: ['さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'] },
-            { level: 5, chars: ['た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の'] },
-            { level: 6, chars: ['な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ'] },
-            { level: 7, chars: ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'] },
-            { level: 8, chars: ['ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り'] },
-            { level: 9, chars: ['や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を'] },
-            { level: 10, chars: ['ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'] },
-            { level: 11, chars: ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'] },
-            { level: 12, chars: ['だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ'] },
-            { level: 13, chars: ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'] },
-            { level: 14, chars: ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ'] },
-            { level: 15, chars: ['ねこ', 'いぬ', 'うま', 'とり', 'さかな', 'はな', 'そら', 'かわ'] }
+            { level: 1, chars: ['あ', 'い', 'う', 'え', 'お'], questionsToPass: 3 },
+            { level: 2, chars: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'], questionsToPass: 3 },
+            { level: 3, chars: ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'], questionsToPass: 5 },
+            { level: 4, chars: ['さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'], questionsToPass: 5 },
+            { level: 5, chars: ['た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の'], questionsToPass: 5 },
+            { level: 6, chars: ['な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ'], questionsToPass: 5 },
+            { level: 7, chars: ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'], questionsToPass: 7 },
+            { level: 8, chars: ['ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り'], questionsToPass: 7 },
+            { level: 9, chars: ['や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を'], questionsToPass: 7 },
+            { level: 10, chars: ['ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'], questionsToPass: 7 },
+            { level: 11, chars: ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'], questionsToPass: 7 },
+            { level: 12, chars: ['だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ'], questionsToPass: 7 },
+            { level: 13, chars: ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'], questionsToPass: 5 },
+            { level: 14, chars: ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ'], questionsToPass: 7 },
+            { level: 15, chars: ['ねこ', 'いぬ', 'うま', 'とり', 'さかな', 'はな', 'そら', 'かわ'], questionsToPass: 8 }
         ];
 
         const hiraganaToRomaji = {
@@ -464,6 +464,9 @@
 
         function createKeyboard() {
             const keyboard = document.getElementById('keyboard');
+            // 既存のキーボードをクリア
+            keyboard.innerHTML = '';
+
             const layout = [
                 ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
                 ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -521,7 +524,8 @@
             currentLevel = 1;
             currentScore = 0;
             document.getElementById('level').textContent = currentLevel;
-            document.getElementById('score').textContent = currentScore;
+            const currentLevelData = levels[currentLevel - 1];
+            document.getElementById('score').textContent = currentScore + '/' + currentLevelData.questionsToPass;
             document.getElementById('progress').style.width = '0%';
         }
 
@@ -578,7 +582,8 @@
                         updateScore();
 
                         setTimeout(() => {
-                            if (currentScore >= 10) {
+                            const currentLevelData = levels[currentLevel - 1];
+                            if (currentScore >= currentLevelData.questionsToPass) {
                                 levelUp();
                             } else {
                                 nextQuestion();
@@ -596,8 +601,10 @@
         });
 
         function updateScore() {
-            document.getElementById('score').textContent = currentScore;
-            const progress = (currentScore / 10) * 100;
+            const currentLevelData = levels[currentLevel - 1];
+            const maxScore = currentLevelData.questionsToPass;
+            document.getElementById('score').textContent = currentScore + '/' + maxScore;
+            const progress = (currentScore / maxScore) * 100;
             document.getElementById('progress').style.width = progress + '%';
         }
 
