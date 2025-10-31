@@ -371,6 +371,107 @@
         .home-button.show {
             display: block;
         }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .star-counter {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .monster-area {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+            margin: 8px 0;
+            display: none;
+        }
+
+        .monster-display {
+            font-size: 64px;
+            margin: 10px 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .monster-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .monster-stage {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .badges-container {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .badges-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .badges-grid {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge-item {
+            font-size: 24px;
+            opacity: 0.3;
+            filter: grayscale(100%);
+            transition: all 0.3s;
+        }
+
+        .badge-item.unlocked {
+            opacity: 1;
+            filter: grayscale(0%);
+            animation: badgePop 0.5s;
+        }
+
+        @keyframes badgePop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .monster-evolution {
+            animation: evolve 1s;
+        }
+
+        @keyframes evolve {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(10deg); }
+            50% { transform: scale(0.8) rotate(-10deg); }
+            75% { transform: scale(1.3) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
     </style>
 </head>
 <body>
@@ -380,9 +481,16 @@
             <div class="title">⚡ タイピング トレーナー ⚡</div>
         </div>
 
-        <div class="level-info">
+        <div class="stats-container">
             <div class="level-badge">レベル <span id="level">1</span></div>
+            <div class="star-counter">⭐ <span id="totalStars">0</span></div>
             <div class="score-badge">スコア <span id="score">0/3</span></div>
+        </div>
+
+        <div class="monster-area" id="monsterArea">
+            <div class="monster-display" id="monsterDisplay">🥚</div>
+            <div class="monster-name" id="monsterName">たまご</div>
+            <div class="monster-stage" id="monsterStage"></div>
         </div>
 
         <div class="progress-bar">
@@ -409,6 +517,11 @@
             </div>
         </div>
 
+        <div class="badges-container">
+            <div class="badges-title">🏆 バッジコレクション</div>
+            <div class="badges-grid" id="badgesGrid"></div>
+        </div>
+
         <div class="romaji-guide">
             <h3>📖 ローマじ ひょう</h3>
             <div class="guide-grid" id="guideGrid"></div>
@@ -425,21 +538,33 @@
     <script>
         // ゲームデータ
         const levels = [
-            { level: 1, chars: ['あ', 'い', 'う', 'え', 'お'], questionsToPass: 3, hintRate: 1.0, theme: '#FFF9C4' },
-            { level: 2, chars: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'], questionsToPass: 3, hintRate: 1.0, theme: '#FFF9C4' },
-            { level: 3, chars: ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'], questionsToPass: 5, hintRate: 1.0, theme: '#E1F5DD' },
-            { level: 4, chars: ['さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'], questionsToPass: 5, hintRate: 0.5, theme: '#E1F5DD' },
-            { level: 5, chars: ['た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の'], questionsToPass: 5, hintRate: 0.5, theme: '#D4E9FF' },
-            { level: 6, chars: ['な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ'], questionsToPass: 5, hintRate: 0.5, theme: '#D4E9FF' },
-            { level: 7, chars: ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'], questionsToPass: 7, hintRate: 0.33, theme: '#FFE8F0' },
-            { level: 8, chars: ['ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り'], questionsToPass: 7, hintRate: 0.33, theme: '#FFE8F0' },
-            { level: 9, chars: ['や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を'], questionsToPass: 7, hintRate: 0.33, theme: '#FFF0E1' },
-            { level: 10, chars: ['ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'], questionsToPass: 7, hintRate: 0, theme: '#FFF0E1' },
-            { level: 11, chars: ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'], questionsToPass: 7, hintRate: 0, theme: '#E8E1FF' },
-            { level: 12, chars: ['だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ'], questionsToPass: 7, hintRate: 0, theme: '#E8E1FF' },
-            { level: 13, chars: ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'], questionsToPass: 5, hintRate: 0, theme: '#FFE1F0' },
-            { level: 14, chars: ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ'], questionsToPass: 7, hintRate: 0, theme: '#FFE1F0' },
-            { level: 15, chars: ['ねこ', 'いぬ', 'うま', 'とり', 'さかな', 'はな', 'そら', 'かわ'], questionsToPass: 8, hintRate: 0, theme: '#FFD4E8' }
+            { level: 1, chars: ['あ', 'い', 'う', 'え', 'お'], questionsToPass: 3, hintRate: 1.0, theme: '#FFF9C4', monster: { egg: '🥚', baby: '🐣', adult: '🐥' }, name: 'ひよこ' },
+            { level: 2, chars: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'], questionsToPass: 3, hintRate: 1.0, theme: '#FFF9C4', monster: { egg: '🥚', baby: '🐣', adult: '🐥' }, name: 'ひよこ' },
+            { level: 3, chars: ['か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ'], questionsToPass: 5, hintRate: 1.0, theme: '#E1F5DD', monster: { egg: '🥚', baby: '🐣', adult: '🐤' }, name: 'にわとり' },
+            { level: 4, chars: ['さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と'], questionsToPass: 5, hintRate: 0.5, theme: '#E1F5DD', monster: { egg: '🥚', baby: '🐉', adult: '🐲' }, name: 'ドラゴン' },
+            { level: 5, chars: ['た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の'], questionsToPass: 5, hintRate: 0.5, theme: '#D4E9FF', monster: { egg: '🥚', baby: '🐉', adult: '🐲' }, name: 'ドラゴン' },
+            { level: 6, chars: ['な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ'], questionsToPass: 5, hintRate: 0.5, theme: '#D4E9FF', monster: { egg: '🥚', baby: '🐉', adult: '🐲' }, name: 'ドラゴン' },
+            { level: 7, chars: ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も'], questionsToPass: 7, hintRate: 0.33, theme: '#FFE8F0', monster: { egg: '🥚', baby: '🦄', adult: '✨' }, name: 'ユニコーン' },
+            { level: 8, chars: ['ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り'], questionsToPass: 7, hintRate: 0.33, theme: '#FFE8F0', monster: { egg: '🥚', baby: '🦄', adult: '✨' }, name: 'ユニコーン' },
+            { level: 9, chars: ['や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を'], questionsToPass: 7, hintRate: 0.33, theme: '#FFF0E1', monster: { egg: '🥚', baby: '🦄', adult: '🦋' }, name: 'ちょうちょ' },
+            { level: 10, chars: ['ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'], questionsToPass: 7, hintRate: 0, theme: '#FFF0E1', monster: { egg: '🥚', baby: '👾', adult: '🤖' }, name: 'ロボット' },
+            { level: 11, chars: ['が', 'ぎ', 'ぐ', 'げ', 'ご', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'], questionsToPass: 7, hintRate: 0, theme: '#E8E1FF', monster: { egg: '🥚', baby: '👾', adult: '🤖' }, name: 'ロボット' },
+            { level: 12, chars: ['だ', 'ぢ', 'づ', 'で', 'ど', 'ば', 'び', 'ぶ', 'べ', 'ぼ'], questionsToPass: 7, hintRate: 0, theme: '#E8E1FF', monster: { egg: '🥚', baby: '👾', adult: '🤖' }, name: 'ロボット' },
+            { level: 13, chars: ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'], questionsToPass: 5, hintRate: 0, theme: '#FFE1F0', monster: { egg: '🥚', baby: '⚡', adult: '🌟' }, name: 'スター' },
+            { level: 14, chars: ['きゃ', 'きゅ', 'きょ', 'しゃ', 'しゅ', 'しょ', 'ちゃ', 'ちゅ', 'ちょ'], questionsToPass: 7, hintRate: 0, theme: '#FFE1F0', monster: { egg: '🥚', baby: '⚡', adult: '🌟' }, name: 'スター' },
+            { level: 15, chars: ['ねこ', 'いぬ', 'うま', 'とり', 'さかな', 'はな', 'そら', 'かわ'], questionsToPass: 8, hintRate: 0, theme: '#FFD4E8', monster: { egg: '🥚', baby: '⚡', adult: '🌠' }, name: 'マスター' }
+        ];
+
+        // バッジデータ
+        const badges = [
+            { id: 'first', name: 'はじめの いっぽ', icon: '👣', condition: 'totalCorrect', value: 1 },
+            { id: 'beginner', name: 'がんばりや', icon: '💪', condition: 'totalCorrect', value: 10 },
+            { id: 'intermediate', name: 'すごいぞ！', icon: '🎖️', condition: 'totalCorrect', value: 50 },
+            { id: 'level5', name: 'レベル5 たっせい', icon: '🏅', condition: 'maxLevel', value: 5 },
+            { id: 'level10', name: 'レベル10 たっせい', icon: '🏆', condition: 'maxLevel', value: 10 },
+            { id: 'star50', name: 'スターコレクター', icon: '⭐', condition: 'totalStars', value: 50 },
+            { id: 'star100', name: 'スターマスター', icon: '🌟', condition: 'totalStars', value: 100 },
+            { id: 'master', name: 'タイピングマスター', icon: '👑', condition: 'maxLevel', value: 15 }
         ];
 
         const hiraganaToRomaji = {
@@ -482,6 +607,14 @@
         let shouldShowHint = true;
         let totalQuestionsInLevel = 0;
 
+        // スター＆バッジデータ（localStorage保存）
+        let gameData = {
+            totalStars: 0,
+            totalCorrect: 0,
+            maxLevel: 1,
+            unlockedBadges: []
+        };
+
         // 正解メッセージのバリエーション
         const successMessages = [
             '⭐ せいかい！',
@@ -498,6 +631,112 @@
             '💪 ちょうし いいね！',
             '🚀 すごいぞ！'
         ];
+
+        // localStorageからデータ読み込み
+        function loadGameData() {
+            const saved = localStorage.getItem('typingGameData');
+            if (saved) {
+                gameData = JSON.parse(saved);
+            }
+        }
+
+        // localStorageにデータ保存
+        function saveGameData() {
+            localStorage.setItem('typingGameData', JSON.stringify(gameData));
+        }
+
+        // バッジチェック
+        function checkAndUnlockBadges() {
+            badges.forEach(badge => {
+                if (!gameData.unlockedBadges.includes(badge.id)) {
+                    let unlock = false;
+                    if (badge.condition === 'totalCorrect' && gameData.totalCorrect >= badge.value) {
+                        unlock = true;
+                    } else if (badge.condition === 'totalStars' && gameData.totalStars >= badge.value) {
+                        unlock = true;
+                    } else if (badge.condition === 'maxLevel' && gameData.maxLevel >= badge.value) {
+                        unlock = true;
+                    }
+
+                    if (unlock) {
+                        gameData.unlockedBadges.push(badge.id);
+                        showBadgeUnlock(badge);
+                        saveGameData();
+                    }
+                }
+            });
+        }
+
+        // バッジ獲得演出
+        function showBadgeUnlock(badge) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = `🎊 バッジゲット！ ${badge.icon} ${badge.name}`;
+            feedback.className = 'feedback correct';
+        }
+
+        // バッジ表示更新
+        function updateBadgesDisplay() {
+            const badgesGrid = document.getElementById('badgesGrid');
+            badgesGrid.innerHTML = '';
+
+            badges.forEach(badge => {
+                const badgeDiv = document.createElement('div');
+                badgeDiv.className = 'badge-item';
+                badgeDiv.textContent = badge.icon;
+                badgeDiv.title = badge.name;
+
+                if (gameData.unlockedBadges.includes(badge.id)) {
+                    badgeDiv.classList.add('unlocked');
+                }
+
+                badgesGrid.appendChild(badgeDiv);
+            });
+        }
+
+        // モンスター表示更新
+        function updateMonsterDisplay() {
+            const levelData = levels[currentLevel - 1];
+            const monsterData = levelData.monster;
+            const monsterDisplay = document.getElementById('monsterDisplay');
+            const monsterName = document.getElementById('monsterName');
+            const monsterStage = document.getElementById('monsterStage');
+
+            let currentMonster = monsterData.egg;
+            let stageName = 'たまご';
+
+            const progress = currentScore / levelData.questionsToPass;
+
+            if (progress >= 0.66) {
+                currentMonster = monsterData.adult;
+                stageName = levelData.name;
+            } else if (progress >= 0.33) {
+                currentMonster = monsterData.baby;
+                stageName = 'せいちょうちゅう';
+            }
+
+            if (monsterDisplay.textContent !== currentMonster) {
+                monsterDisplay.classList.add('monster-evolution');
+                setTimeout(() => {
+                    monsterDisplay.classList.remove('monster-evolution');
+                }, 1000);
+            }
+
+            monsterDisplay.textContent = currentMonster;
+            monsterName.textContent = stageName;
+            monsterStage.textContent = `${currentScore} / ${levelData.questionsToPass}`;
+        }
+
+        // スター表示更新
+        function updateStarsDisplay() {
+            document.getElementById('totalStars').textContent = gameData.totalStars;
+        }
+
+        // ページ読み込み時の初期化
+        window.addEventListener('load', () => {
+            loadGameData();
+            updateStarsDisplay();
+            updateBadgesDisplay();
+        });
 
         function createKeyboard() {
             const keyboard = document.getElementById('keyboard');
@@ -548,8 +787,10 @@
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('playScreen').style.display = 'block';
             document.getElementById('homeButton').classList.add('show');
+            document.getElementById('monsterArea').style.display = 'block';
             createKeyboard();
             updateRomajiGuide();
+            updateMonsterDisplay();
             nextQuestion();
         }
 
@@ -557,6 +798,7 @@
             document.getElementById('startScreen').style.display = 'block';
             document.getElementById('playScreen').style.display = 'none';
             document.getElementById('homeButton').classList.remove('show');
+            document.getElementById('monsterArea').style.display = 'none';
             // ゲーム状態をリセット
             currentLevel = 1;
             currentScore = 0;
@@ -566,6 +808,7 @@
             const currentLevelData = levels[currentLevel - 1];
             document.getElementById('score').textContent = currentScore + '/' + currentLevelData.questionsToPass;
             document.getElementById('progress').style.width = '0%';
+            updateMonsterDisplay();
         }
 
         function nextQuestion() {
@@ -627,6 +870,15 @@
                         comboCount++;
                         currentScore++;
 
+                        // スター獲得
+                        gameData.totalStars++;
+                        gameData.totalCorrect++;
+                        updateStarsDisplay();
+                        saveGameData();
+
+                        // バッジチェック
+                        checkAndUnlockBadges();
+
                         // メッセージの選択
                         let message = successMessages[Math.floor(Math.random() * successMessages.length)];
 
@@ -636,9 +888,10 @@
                             message = message + ' ' + comboMsg + ' (x' + comboCount + ')';
                         }
 
-                        document.getElementById('feedback').textContent = message;
+                        document.getElementById('feedback').textContent = message + ' +⭐';
                         document.getElementById('feedback').className = 'feedback correct';
                         updateScore();
+                        updateMonsterDisplay();
 
                         setTimeout(() => {
                             const currentLevelData = levels[currentLevel - 1];
@@ -675,21 +928,36 @@
                 currentScore = 0;
                 comboCount = 0;
                 totalQuestionsInLevel = 0;
+
+                // 最大レベル更新
+                if (currentLevel > gameData.maxLevel) {
+                    gameData.maxLevel = currentLevel;
+                    saveGameData();
+                    checkAndUnlockBadges();
+                }
+
                 document.getElementById('level').textContent = currentLevel;
                 document.getElementById('newLevel').textContent = currentLevel;
                 document.getElementById('overlay').classList.add('show');
                 document.getElementById('levelUpScreen').classList.add('show');
                 updateRomajiGuide();
+                updateMonsterDisplay();
             } else {
-                alert('🎊 おめでとう！ ぜんぶ クリア したよ！ 🎊\nあなたは タイピング マスター だ！');
+                // 全レベルクリア
+                gameData.maxLevel = 15;
+                saveGameData();
+                checkAndUnlockBadges();
+                alert('🎊 おめでとう！ ぜんぶ クリア したよ！ 🎊\nあなたは タイピング マスター だ！\n⭐ トータルスター: ' + gameData.totalStars);
                 currentScore = 0;
             }
             updateScore();
+            updateBadgesDisplay();
         }
 
         function continuePlaying() {
             document.getElementById('overlay').classList.remove('show');
             document.getElementById('levelUpScreen').classList.remove('show');
+            updateMonsterDisplay();
             nextQuestion();
         }
     </script>
